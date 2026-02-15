@@ -1,6 +1,6 @@
 # phpdoc-exporter
 
-A CLI tool to export PHPDoc comments from PHP files into a single Markdown document with standards validation.
+A CLI tool to export PHPDoc comments from PHP files into a single Markdown document with [docs/phpdoc.md](PHPDoc standards) validation.
 
 ## Installation
 
