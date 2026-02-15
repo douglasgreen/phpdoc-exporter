@@ -2,6 +2,9 @@
 
 # Project-specific settings (put your files here)
 
+# AI
+.aider*
+
 # Build directories
 build/
 .cache/
@@ -40,4 +43,3 @@ __pycache__/
 /.env.local.php
 parameters.yml
 /var/
-
