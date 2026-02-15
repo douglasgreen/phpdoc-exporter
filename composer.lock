@@ -4,8 +4,69 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c5abceb93f2db37ec228b3f90d524077",
+    "content-hash": "737ed391df6f8697eef4523510320988",
     "packages": [
+        {
+            "name": "douglasgreen/opt-parser",
+            "version": "v0.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/douglasgreen/opt-parser.git",
+                "reference": "a1740e41e8380cc6d41c178a005ac6a4f77f9543"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/douglasgreen/opt-parser/zipball/a1740e41e8380cc6d41c178a005ac6a4f77f9543",
+                "reference": "a1740e41e8380cc6d41c178a005ac6a4f77f9543",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.93.1",
+                "phpstan/phpstan": "^2.1.38",
+                "phpunit/phpunit": "^12.5.8",
+                "rector/rector": "^2.3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Tests\\Unit\\": "tests/",
+                    "DouglasGreen\\OptParser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Douglas Green",
+                    "email": "douglas@nurd.site",
+                    "homepage": "https://nurd.site/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Command-line option parser for PHP",
+            "homepage": "https://github.com/douglasgreen/opt-parser",
+            "keywords": [
+                "cli",
+                "command",
+                "command line",
+                "command-line interface",
+                "console",
+                "option parser",
+                "php",
+                "php cli",
+                "php scripting"
+            ],
+            "support": {
+                "issues": "https://github.com/douglasgreen/opt-parser/issues",
+                "source": "https://github.com/douglasgreen/opt-parser/tree/v0.6.1"
+            },
+            "time": "2026-02-15T23:47:25+00:00"
+        },
         {
             "name": "nikic/php-parser",
             "version": "v5.7.0",
