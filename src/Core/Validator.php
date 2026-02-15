@@ -359,7 +359,8 @@ final class Validator
 
         // Find first non-empty, non-tag line
         foreach ($lines as $line) {
-            $line = trim($line, " \t\n\r\0\x0B*");
+            $line = trim($line, " \t\n\r\0\x0B");
+            $line = (string) preg_replace('#^/?\*+\s*#', '', $line);
             if ($line !== '' && !str_starts_with($line, '@')) {
                 return $line;
             }
