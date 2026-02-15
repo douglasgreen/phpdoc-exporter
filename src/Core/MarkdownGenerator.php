@@ -14,7 +14,9 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
  * with proper headings, code blocks, and cross-references.
  *
  * @package DouglasGreen\PhpDocExporter\Core
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class MarkdownGenerator
@@ -34,6 +36,7 @@ final class MarkdownGenerator
      *
      * @param list<array{file: string, elements: list<array>}> $documentation Extracted documentation data
      * @param string $projectName Project name for the document
+     *
      * @return array{markdown: string, warnings: list<array>}
      */
     public function generate(array $documentation, string $projectName = 'PHP Documentation'): array
@@ -73,6 +76,7 @@ final class MarkdownGenerator
      * Groups documentation elements by file path.
      *
      * @param list<array{file: string, elements: list<array>}> $documentation Raw documentation
+     *
      * @return array<string, list<array>>
      */
     private function groupByFile(array $documentation): array
@@ -92,6 +96,7 @@ final class MarkdownGenerator
      *
      * @param string $filePath File path
      * @param list<array> $elements Documentation elements
+     *
      * @return list<string> Markdown lines
      */
     private function generateFileSection(string $filePath, array $elements): array
@@ -104,8 +109,8 @@ final class MarkdownGenerator
         ];
 
         // Separate file-level docblock from other elements
-        $fileElements = array_filter($elements, fn($e) => $e['type'] === 'file');
-        $otherElements = array_filter($elements, fn($e) => $e['type'] !== 'file');
+        $fileElements = array_filter($elements, fn ($e) => $e['type'] === 'file');
+        $otherElements = array_filter($elements, fn ($e) => $e['type'] !== 'file');
 
         // Output file-level docblock first
         foreach ($fileElements as $fileElement) {
@@ -145,7 +150,7 @@ final class MarkdownGenerator
             // Add methods for this class
             $classMethods = array_filter(
                 $otherElements,
-                fn($e) => $e['type'] === 'method' && str_starts_with($e['name'], $class['name'] . '::')
+                fn ($e) => $e['type'] === 'method' && str_starts_with($e['name'], $class['name'] . '::'),
             );
             foreach ($classMethods as $method) {
                 $lines = [...$lines, ...$this->generateElementSection($method, $filePath, indent: true)];
@@ -171,6 +176,7 @@ final class MarkdownGenerator
      * @param array $element Element data
      * @param string $filePath File path for validation
      * @param bool $indent Whether to indent (for class members)
+     *
      * @return list<string> Markdown lines
      */
     private function generateElementSection(array $element, string $filePath, bool $indent = false): array
@@ -228,6 +234,7 @@ final class MarkdownGenerator
      *
      * @param PhpDocNode $doc Parsed PHPDoc node
      * @param string $prefix Line prefix
+     *
      * @return list<string> Markdown lines
      */
     private function generateTags(PhpDocNode $doc, string $prefix): array
@@ -287,6 +294,7 @@ final class MarkdownGenerator
      * Extracts and groups tags from a PHPDoc node.
      *
      * @param PhpDocNode $doc Parsed PHPDoc node
+     *
      * @return array<string, list<PhpDocTagNode>>
      */
     private function extractTags(PhpDocNode $doc): array
@@ -341,11 +349,11 @@ final class MarkdownGenerator
 
         $mustWarnings = array_filter(
             $this->allWarnings,
-            fn($w) => $w['level'] === 'MUST'
+            fn ($w) => $w['level'] === 'MUST',
         );
         $shouldWarnings = array_filter(
             $this->allWarnings,
-            fn($w) => $w['level'] === 'SHOULD'
+            fn ($w) => $w['level'] === 'SHOULD',
         );
 
         if ($mustWarnings !== []) {
@@ -355,7 +363,7 @@ final class MarkdownGenerator
                 $lines[] = sprintf(
                     '- **[%s]** %s',
                     $warning['rule'],
-                    $warning['message']
+                    $warning['message'],
                 );
             }
             $lines[] = '';
@@ -368,7 +376,7 @@ final class MarkdownGenerator
                 $lines[] = sprintf(
                     '- **[%s]** %s',
                     $warning['rule'],
-                    $warning['message']
+                    $warning['message'],
                 );
             }
             $lines[] = '';

@@ -1,8 +1,10 @@
 parameters:
   level: 8
   paths:
+    - bin/phpdoc-exporter
+    - .php-cs-fixer.php
+    - rector.php
     - src
-    - tests
   excludePaths:
     - var
     - vendor

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace DouglasGreen\PhpDocExporter\Core;
 
+use Exception;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Property;
@@ -28,13 +28,17 @@ use PHPStan\PhpDocParser\ParserConfig;
  * from file headers, classes, interfaces, traits, methods, functions, and properties.
  *
  * @package DouglasGreen\PhpDocExporter\Core
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class PhpDocExtractor
 {
     private Parser $phpParser;
+
     private PhpDocParser $phpDocParser;
+
     private Lexer $lexer;
 
     public function __construct()
@@ -50,6 +54,7 @@ final class PhpDocExtractor
      * Extracts all PHPDoc blocks from a PHP file.
      *
      * @param string $filePath Path to PHP file
+     *
      * @return array{
      *     file: string,
      *     elements: list<array{
@@ -133,7 +138,7 @@ final class PhpDocExtractor
 
             try {
                 $docNode = $this->parseDocComment($docText);
-            } catch (\Exception) {
+            } catch (Exception) {
                 // Keep docText but docNode remains null for invalid PHPDoc
             }
 
@@ -192,7 +197,7 @@ final class PhpDocExtractor
             $docText = $doc->getText();
             try {
                 $docNode = $this->parseDocComment($docText);
-            } catch (\Exception) {
+            } catch (Exception) {
                 // Keep docText but docNode remains null for invalid PHPDoc
             }
         }
@@ -212,6 +217,7 @@ final class PhpDocExtractor
      * Determines the type of AST node.
      *
      * @param Node $node AST node to check
+     *
      * @return string|null Node type or null if not documentable
      */
     private function getNodeType(Node $node): ?string
@@ -251,8 +257,8 @@ final class PhpDocExtractor
         }
         if ($node instanceof Property) {
             return implode(', ', array_map(
-                fn($prop) => $prop->name->toString(),
-                $node->props
+                fn ($prop) => $prop->name->toString(),
+                $node->props,
             ));
         }
 

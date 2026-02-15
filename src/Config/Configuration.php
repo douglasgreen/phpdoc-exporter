@@ -11,7 +11,9 @@ namespace DouglasGreen\PhpDocExporter\Config;
  * including source paths, ignore patterns, and output settings.
  *
  * @package DouglasGreen\PhpDocExporter\Config
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final readonly class Configuration

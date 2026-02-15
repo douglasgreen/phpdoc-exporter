@@ -17,7 +17,9 @@ use DouglasGreen\PhpDocExporter\IO\FileFinder;
  * Markdown generation, and output writing.
  *
  * @package DouglasGreen\PhpDocExporter\Cli
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class Application
@@ -33,6 +35,7 @@ final class Application
      * Runs the application with the given arguments.
      *
      * @param list<string> $argv Command-line arguments
+     *
      * @return int Exit code per POSIX conventions
      */
     public function run(array $argv): int
@@ -86,13 +89,13 @@ final class Application
 
         // Report warnings
         if ($warnings !== []) {
-            $mustCount = count(array_filter($warnings, fn($w) => $w['level'] === 'MUST'));
-            $shouldCount = count(array_filter($warnings, fn($w) => $w['level'] === 'SHOULD'));
+            $mustCount = count(array_filter($warnings, fn ($w) => $w['level'] === 'MUST'));
+            $shouldCount = count(array_filter($warnings, fn ($w) => $w['level'] === 'SHOULD'));
 
             fwrite(STDERR, sprintf(
                 "\nWarning: %d MUST violation(s), %d SHOULD improvement(s) detected\n",
                 $mustCount,
-                $shouldCount
+                $shouldCount,
             ));
 
             if ($config->strict && $mustCount > 0) {
@@ -113,7 +116,7 @@ final class Application
             fwrite(STDERR, sprintf(
                 "Successfully wrote %d bytes to %s\n",
                 $written,
-                $config->outputFile
+                $config->outputFile,
             ));
         }
 

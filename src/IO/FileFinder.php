@@ -15,7 +15,9 @@ use SplFileInfo;
  * for excluding specific paths from documentation generation.
  *
  * @package DouglasGreen\PhpDocExporter\IO
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class FileFinder
@@ -25,6 +27,7 @@ final class FileFinder
      *
      * @param list<string> $sourcePaths Files or directories to search
      * @param list<string> $ignorePaths Patterns to exclude
+     *
      * @return list<string> Absolute paths to PHP files
      */
     public function find(array $sourcePaths, array $ignorePaths): array
@@ -58,13 +61,14 @@ final class FileFinder
      * Normalizes ignore patterns for consistent matching.
      *
      * @param list<string> $patterns Raw ignore patterns
+     *
      * @return list<string> Normalized patterns
      */
     private function normalizeIgnorePatterns(array $patterns): array
     {
         return array_map(
-            fn(string $pattern): string => str_replace('\\', '/', $pattern),
-            $patterns
+            fn (string $pattern): string => str_replace('\\', '/', $pattern),
+            $patterns,
         );
     }
 
@@ -73,6 +77,7 @@ final class FileFinder
      *
      * @param string $directory Directory to search
      * @param list<string> $ignorePatterns Patterns to exclude
+     *
      * @return list<string> Found PHP files
      */
     private function findInDirectory(string $directory, array $ignorePatterns): array
@@ -81,8 +86,8 @@ final class FileFinder
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $directory,
-                RecursiveDirectoryIterator::SKIP_DOTS
-            )
+                RecursiveDirectoryIterator::SKIP_DOTS,
+            ),
         );
 
         /** @var SplFileInfo $file */

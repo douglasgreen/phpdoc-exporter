@@ -13,12 +13,15 @@ use DouglasGreen\PhpDocExporter\Config\Configuration;
  * and produces a typed Configuration object for the application.
  *
  * @package DouglasGreen\PhpDocExporter\Cli
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class ArgsParser
 {
     private const VERSION = '1.0.0';
+
     private const PROGRAM_NAME = 'phpdoc-exporter';
 
     /** @var list<string> */
@@ -30,14 +33,18 @@ final class ArgsParser
     private string $outputFile = '';
 
     private bool $verbose = false;
+
     private bool $strict = false;
+
     private bool $helpRequested = false;
+
     private bool $versionRequested = false;
 
     /**
      * Parses command-line arguments into a Configuration object.
      *
      * @param list<string> $argv Raw command-line arguments
+     *
      * @return Configuration|false Configuration on success, false on parse error
      */
     public function parse(array $argv): Configuration|false
@@ -192,6 +199,7 @@ HELP;
      *
      * @param list<string> $args Argument array
      * @param int $index Current index
+     *
      * @return int|false Next index or false on error
      */
     private function parseLongOption(array $args, int $index): int|false
@@ -211,19 +219,15 @@ HELP;
             case 'help':
                 $this->helpRequested = true;
                 return $index + 1;
-
             case 'version':
                 $this->versionRequested = true;
                 return $index + 1;
-
             case 'verbose':
                 $this->verbose = true;
                 return $index + 1;
-
             case 'strict':
                 $this->strict = true;
                 return $index + 1;
-
             case 'output':
             case 'o':
                 if ($value !== null) {
@@ -236,7 +240,6 @@ HELP;
                 }
                 $this->outputFile = $args[$index + 1];
                 return $index + 2;
-
             case 'ignore':
             case 'i':
                 if ($value !== null) {
@@ -249,7 +252,6 @@ HELP;
                 }
                 $this->ignorePaths[] = $args[$index + 1];
                 return $index + 2;
-
             default:
                 fwrite(STDERR, "error: unknown option --{$option}\n");
                 return false;
@@ -261,6 +263,7 @@ HELP;
      *
      * @param list<string> $args Argument array
      * @param int $index Current index
+     *
      * @return int|false Next index or false on error
      */
     private function parseShortOptions(array $args, int $index): int|false
@@ -276,15 +279,12 @@ HELP;
                 case 'h':
                     $this->helpRequested = true;
                     break;
-
                 case 'v':
                     $this->verbose = true;
                     break;
-
                 case 's':
                     $this->strict = true;
                     break;
-
                 case 'o':
                     if (!$isLast) {
                         fwrite(STDERR, "error: -o cannot be combined with other options\n");
@@ -296,7 +296,6 @@ HELP;
                     }
                     $this->outputFile = $args[$index + 1];
                     return $index + 2;
-
                 case 'i':
                     if (!$isLast) {
                         fwrite(STDERR, "error: -i cannot be combined with other options\n");
@@ -308,7 +307,6 @@ HELP;
                     }
                     $this->ignorePaths[] = $args[$index + 1];
                     return $index + 2;
-
                 default:
                     fwrite(STDERR, "error: unknown option -{$option}\n");
                     return false;

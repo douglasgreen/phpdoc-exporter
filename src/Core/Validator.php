@@ -14,21 +14,21 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
  * documentation standards for files, classes, methods, and properties.
  *
  * @package DouglasGreen\PhpDocExporter\Core
+ *
  * @api
+ *
  * @since 1.0.0
  */
 final class Validator
 {
-    /**
-     * Validation warning levels per RFC 2119.
-     */
+    /** Validation warning levels per RFC 2119. */
     public const LEVEL_MUST = 'MUST';
+
     public const LEVEL_SHOULD = 'SHOULD';
+
     public const LEVEL_MAY = 'MAY';
 
-    /**
-     * @var list<array{level: string, rule: string, element: string, message: string}>
-     */
+    /** @var list<array{level: string, rule: string, element: string, message: string}> */
     private array $warnings = [];
 
     /**
@@ -39,6 +39,7 @@ final class Validator
      * @param string $elementName Name of the element being validated
      * @param string $filePath File containing the element
      * @param int $lineNumber Line number of the element
+     *
      * @return list<array{level: string, rule: string, element: string, message: string}>
      */
     public function validate(
@@ -46,7 +47,7 @@ final class Validator
         string $elementType,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): array {
         $this->warnings = [];
 
@@ -55,7 +56,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Element '{$elementName}' ({$elementType}) lacks PHPDoc documentation"
+                "Element '{$elementName}' ({$elementType}) lacks PHPDoc documentation",
             );
             return $this->warnings;
         }
@@ -95,7 +96,7 @@ final class Validator
         PhpDocNode $doc,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // 2.1: MUST include summary
         $summary = $this->extractSummary($doc);
@@ -104,7 +105,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '2.2',
                 "{$filePath}:{$lineNumber}",
-                "File-level docblock lacks a summary"
+                'File-level docblock lacks a summary',
             );
         }
 
@@ -115,7 +116,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '2.2',
                 "{$filePath}:{$lineNumber}",
-                "Script file lacks 'Arguments' or 'Parameters' section in description"
+                "Script file lacks 'Arguments' or 'Parameters' section in description",
             );
         }
 
@@ -125,7 +126,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '2.2',
                 "{$filePath}:{$lineNumber}",
-                "Script file lacks @example demonstrating CLI usage"
+                'Script file lacks @example demonstrating CLI usage',
             );
         }
 
@@ -135,7 +136,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '2.4',
                 "{$filePath}:{$lineNumber}",
-                "File-level docblock missing @package tag"
+                'File-level docblock missing @package tag',
             );
         }
 
@@ -145,7 +146,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '2.3',
                 "{$filePath}:{$lineNumber}",
-                "File-level docblock missing @author tag"
+                'File-level docblock missing @author tag',
             );
         }
     }
@@ -162,7 +163,7 @@ final class Validator
         PhpDocNode $doc,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // MUST include short description (summary line)
         $summary = $this->extractSummary($doc);
@@ -171,7 +172,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Class/interface/trait '{$elementName}' lacks short description"
+                "Class/interface/trait '{$elementName}' lacks short description",
             );
         } else {
             $this->validateSummary($summary, $elementName, $filePath, $lineNumber);
@@ -183,7 +184,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' missing @package tag"
+                "Class '{$elementName}' missing @package tag",
             );
         }
 
@@ -193,7 +194,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' missing @since tag"
+                "Class '{$elementName}' missing @since tag",
             );
         }
 
@@ -203,7 +204,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' should have @api or @internal marker"
+                "Class '{$elementName}' should have @api or @internal marker",
             );
         }
     }
@@ -220,7 +221,7 @@ final class Validator
         PhpDocNode $doc,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // MUST include short description
         $summary = $this->extractSummary($doc);
@@ -229,7 +230,7 @@ final class Validator
                 self::LEVEL_MUST,
                 '1.1',
                 "{$filePath}:{$lineNumber}",
-                "Method/function '{$elementName}' lacks short description"
+                "Method/function '{$elementName}' lacks short description",
             );
         }
 
@@ -239,7 +240,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '4.1',
                 "{$filePath}:{$lineNumber}",
-                "Method/function '{$elementName}' missing @return tag"
+                "Method/function '{$elementName}' missing @return tag",
             );
         }
     }
@@ -256,7 +257,7 @@ final class Validator
         PhpDocNode $doc,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // SHOULD have @var for complex types
         if (!$this->hasTag($doc, '@var')) {
@@ -264,7 +265,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '3.3',
                 "{$filePath}:{$lineNumber}",
-                "Property '{$elementName}' missing @var tag"
+                "Property '{$elementName}' missing @var tag",
             );
         }
     }
@@ -281,7 +282,7 @@ final class Validator
         PhpDocNode $doc,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // Check for deprecated elements
         if ($this->hasTag($doc, '@deprecated')) {
@@ -293,7 +294,7 @@ final class Validator
                         self::LEVEL_SHOULD,
                         '5.2',
                         "{$filePath}:{$lineNumber}",
-                        "Deprecated '{$elementName}' should reference replacement"
+                        "Deprecated '{$elementName}' should reference replacement",
                     );
                 }
             }
@@ -312,7 +313,7 @@ final class Validator
         string $summary,
         string $elementName,
         string $filePath,
-        int $lineNumber
+        int $lineNumber,
     ): void {
         // SHOULD be under 80 characters
         if (strlen($summary) > 80) {
@@ -320,7 +321,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.3',
                 "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' exceeds 80 characters"
+                "Summary for '{$elementName}' exceeds 80 characters",
             );
         }
 
@@ -330,7 +331,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.3',
                 "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' should end with period"
+                "Summary for '{$elementName}' should end with period",
             );
         }
 
@@ -343,7 +344,7 @@ final class Validator
                 self::LEVEL_SHOULD,
                 '1.3',
                 "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' should not restate element name"
+                "Summary for '{$elementName}' should not restate element name",
             );
         }
     }

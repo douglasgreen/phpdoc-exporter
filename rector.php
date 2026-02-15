@@ -7,13 +7,10 @@ use Rector\ValueObject\PhpVersion;
 
 return RectorConfig::configure()
     ->withPaths([
+        __DIR__ . '/bin/phpdoc-exporter',
         __DIR__ . '/.php-cs-fixer.php',
         __DIR__ . '/rector.php',
-        __DIR__ . '/register-error-handler.php',
-        __DIR__ . '/bin',
-        __DIR__ . '/public',
         __DIR__ . '/src',
-        __DIR__ . '/tests',
     ])
     ->withPhpSets(php83: true)
     ->withPreparedSets(
