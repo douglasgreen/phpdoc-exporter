@@ -1,0 +1,11 @@
+parameters:
+  level: 9
+  paths:
+    - src
+    - bin
+  excludePaths:
+    - vendor
+  checkMissingIterableValueType: true
+  checkGenericClassInNonGenericObjectType: true
+  reportUnmatchedIgnoredErrors: true
+  treatPhpDocTypesAsCertain: true

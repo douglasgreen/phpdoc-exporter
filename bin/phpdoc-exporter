@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use DouglasGreen\PhpDocExporter\Cli\Application;
+
+// Find autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
+];
+
+$autoloadPath = null;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        $autoloadPath = $path;
+        break;
+    }
+}
+
+if ($autoloadPath === null) {
+    fwrite(STDERR, "error: unable to find composer autoload\n");
+    exit(127);
+}
+
+require_once $autoloadPath;
+
+// Run application
+$application = new Application();
+exit($application->run($argv));
