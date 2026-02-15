@@ -21,7 +21,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
  */
 final class MarkdownGenerator
 {
-    private Validator $validator;
+    private readonly Validator $validator;
 
     /** @var list<array{level: string, rule: string, element: string, message: string}> */
     private array $allWarnings = [];
@@ -109,8 +109,8 @@ final class MarkdownGenerator
         ];
 
         // Separate file-level docblock from other elements
-        $fileElements = array_filter($elements, fn ($e) => $e['type'] === 'file');
-        $otherElements = array_filter($elements, fn ($e) => $e['type'] !== 'file');
+        $fileElements = array_filter($elements, fn (array $e): bool => $e['type'] === 'file');
+        $otherElements = array_filter($elements, fn (array $e): bool => $e['type'] !== 'file');
 
         // Output file-level docblock first
         foreach ($fileElements as $fileElement) {
@@ -150,7 +150,7 @@ final class MarkdownGenerator
             // Add methods for this class
             $classMethods = array_filter(
                 $otherElements,
-                fn ($e) => $e['type'] === 'method' && str_starts_with($e['name'], $class['name'] . '::'),
+                fn (array $e): bool => $e['type'] === 'method' && str_starts_with((string) $e['name'], $class['name'] . '::'),
             );
             foreach ($classMethods as $method) {
                 $lines = [...$lines, ...$this->generateElementSection($method, $filePath, indent: true)];
@@ -195,7 +195,7 @@ final class MarkdownGenerator
         $warnings = $this->validator->validate($doc, $type, $name, $filePath, $startLine);
         $this->allWarnings = [...$this->allWarnings, ...$warnings];
 
-        $displayType = ucfirst($type);
+        $displayType = ucfirst((string) $type);
         $displayName = $type === 'file' ? 'Script/File' : $name;
 
         $lines = [
@@ -248,6 +248,7 @@ final class MarkdownGenerator
             foreach ($tagGroups['param'] as $tag) {
                 $lines[] = $prefix . $this->formatTag($tag);
             }
+
             $lines[] = '';
         }
 
@@ -257,6 +258,7 @@ final class MarkdownGenerator
             foreach ($tagGroups['return'] as $tag) {
                 $lines[] = $prefix . $this->formatTag($tag);
             }
+
             $lines[] = '';
         }
 
@@ -266,6 +268,7 @@ final class MarkdownGenerator
             foreach ($tagGroups['throws'] as $tag) {
                 $lines[] = $prefix . $this->formatTag($tag);
             }
+
             $lines[] = '';
         }
 
@@ -275,6 +278,7 @@ final class MarkdownGenerator
             foreach ($tagGroups['see'] as $tag) {
                 $lines[] = $prefix . $this->formatTag($tag);
             }
+
             $lines[] = '';
         }
 
@@ -284,6 +288,7 @@ final class MarkdownGenerator
             foreach ($tagGroups['deprecated'] as $tag) {
                 $lines[] = $prefix . $this->formatTag($tag);
             }
+
             $lines[] = '';
         }
 
@@ -349,11 +354,11 @@ final class MarkdownGenerator
 
         $mustWarnings = array_filter(
             $this->allWarnings,
-            fn ($w) => $w['level'] === 'MUST',
+            fn (array $w): bool => $w['level'] === 'MUST',
         );
         $shouldWarnings = array_filter(
             $this->allWarnings,
-            fn ($w) => $w['level'] === 'SHOULD',
+            fn (array $w): bool => $w['level'] === 'SHOULD',
         );
 
         if ($mustWarnings !== []) {
@@ -366,6 +371,7 @@ final class MarkdownGenerator
                     $warning['message'],
                 );
             }
+
             $lines[] = '';
         }
 
@@ -379,6 +385,7 @@ final class MarkdownGenerator
                     $warning['message'],
                 );
             }
+
             $lines[] = '';
         }
 

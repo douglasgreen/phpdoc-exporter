@@ -20,9 +20,9 @@ use DouglasGreen\PhpDocExporter\Config\Configuration;
  */
 final class ArgsParser
 {
-    private const VERSION = '1.0.0';
+    private const string VERSION = '1.0.0';
 
-    private const PROGRAM_NAME = 'phpdoc-exporter';
+    private const string PROGRAM_NAME = 'phpdoc-exporter';
 
     /** @var list<string> */
     private array $sourcePaths = [];
@@ -63,10 +63,11 @@ final class ArgsParser
             if ($arg === '--') {
                 $i++;
                 while ($i < count($args)) {
-                    $this->addOperand($args[$i], $operandCount);
+                    $this->addOperand($args[$i]);
                     $operandCount++;
                     $i++;
                 }
+
                 break;
             }
 
@@ -76,6 +77,7 @@ final class ArgsParser
                 if ($result === false) {
                     return false;
                 }
+
                 $i = $result;
                 continue;
             }
@@ -86,12 +88,13 @@ final class ArgsParser
                 if ($result === false) {
                     return false;
                 }
+
                 $i = $result;
                 continue;
             }
 
             // Handle operand
-            $this->addOperand($arg, $operandCount);
+            $this->addOperand($arg);
             $operandCount++;
             $i++;
         }
@@ -234,10 +237,12 @@ HELP;
                     $this->outputFile = $value;
                     return $index + 1;
                 }
+
                 if (!isset($args[$index + 1])) {
                     fwrite(STDERR, "error: --output requires a value\n");
                     return false;
                 }
+
                 $this->outputFile = $args[$index + 1];
                 return $index + 2;
             case 'ignore':
@@ -246,14 +251,16 @@ HELP;
                     $this->ignorePaths[] = $value;
                     return $index + 1;
                 }
+
                 if (!isset($args[$index + 1])) {
                     fwrite(STDERR, "error: --ignore requires a value\n");
                     return false;
                 }
+
                 $this->ignorePaths[] = $args[$index + 1];
                 return $index + 2;
             default:
-                fwrite(STDERR, "error: unknown option --{$option}\n");
+                fwrite(STDERR, sprintf('error: unknown option --%s%s', $option, PHP_EOL));
                 return false;
         }
     }
@@ -290,10 +297,12 @@ HELP;
                         fwrite(STDERR, "error: -o cannot be combined with other options\n");
                         return false;
                     }
+
                     if (!isset($args[$index + 1])) {
                         fwrite(STDERR, "error: -o requires a value\n");
                         return false;
                     }
+
                     $this->outputFile = $args[$index + 1];
                     return $index + 2;
                 case 'i':
@@ -301,14 +310,16 @@ HELP;
                         fwrite(STDERR, "error: -i cannot be combined with other options\n");
                         return false;
                     }
+
                     if (!isset($args[$index + 1])) {
                         fwrite(STDERR, "error: -i requires a value\n");
                         return false;
                     }
+
                     $this->ignorePaths[] = $args[$index + 1];
                     return $index + 2;
                 default:
-                    fwrite(STDERR, "error: unknown option -{$option}\n");
+                    fwrite(STDERR, sprintf('error: unknown option -%s%s', $option, PHP_EOL));
                     return false;
             }
         }
@@ -320,9 +331,8 @@ HELP;
      * Adds an operand to the appropriate list.
      *
      * @param string $value Operand value
-     * @param int $count Operand count (for ordering)
      */
-    private function addOperand(string $value, int $count): void
+    private function addOperand(string $value): void
     {
         // Output file takes first priority if not set via option
         if ($this->outputFile === '' && str_ends_with($value, '.md')) {

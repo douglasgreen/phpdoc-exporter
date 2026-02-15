@@ -7,6 +7,7 @@ namespace DouglasGreen\PhpDocExporter\Core;
 use Exception;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
+use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
@@ -33,7 +34,7 @@ use PHPStan\PhpDocParser\ParserConfig;
  *
  * @since 1.0.0
  */
-final class PhpDocExtractor
+final readonly class PhpDocExtractor
 {
     private Parser $phpParser;
 
@@ -243,21 +244,26 @@ final class PhpDocExtractor
         if ($node instanceof Class_) {
             return $node->name?->toString();
         }
+
         if ($node instanceof Interface_) {
             return $node->name->toString();
         }
+
         if ($node instanceof Trait_) {
             return $node->name->toString();
         }
+
         if ($node instanceof ClassMethod) {
             return $node->name->toString();
         }
+
         if ($node instanceof Function_) {
             return $node->name->toString();
         }
+
         if ($node instanceof Property) {
             return implode(', ', array_map(
-                fn ($prop) => $prop->name->toString(),
+                fn (PropertyItem $prop): string => $prop->name->toString(),
                 $node->props,
             ));
         }
@@ -281,6 +287,7 @@ final class PhpDocExtractor
                 $namespace = $parent->name?->toString();
                 break;
             }
+
             $parent = $parent->getAttribute('parent');
         }
 

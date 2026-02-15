@@ -22,11 +22,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 final class Validator
 {
     /** Validation warning levels per RFC 2119. */
-    public const LEVEL_MUST = 'MUST';
+    public const string LEVEL_MUST = 'MUST';
 
-    public const LEVEL_SHOULD = 'SHOULD';
+    public const string LEVEL_SHOULD = 'SHOULD';
 
-    public const LEVEL_MAY = 'MAY';
+    public const string LEVEL_MAY = 'MAY';
 
     /** @var list<array{level: string, rule: string, element: string, message: string}> */
     private array $warnings = [];
@@ -51,18 +51,18 @@ final class Validator
     ): array {
         $this->warnings = [];
 
-        if ($doc === null) {
+        if (!$doc instanceof PhpDocNode) {
             $this->addWarning(
                 self::LEVEL_MUST,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Element '{$elementName}' ({$elementType}) lacks PHPDoc documentation",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Element '%s' (%s) lacks PHPDoc documentation", $elementName, $elementType),
             );
             return $this->warnings;
         }
 
         match ($elementType) {
-            'file' => $this->validateFile($doc, $elementName, $filePath, $lineNumber),
+            'file' => $this->validateFile($doc, $filePath, $lineNumber),
             'class', 'interface', 'trait' => $this->validateClassLike($doc, $elementName, $filePath, $lineNumber),
             'method', 'function' => $this->validateCallable($doc, $elementName, $filePath, $lineNumber),
             'property' => $this->validateProperty($doc, $elementName, $filePath, $lineNumber),
@@ -88,13 +88,11 @@ final class Validator
      * Validates file-level docblock (Standard 2).
      *
      * @param PhpDocNode $doc Parsed PHPDoc node
-     * @param string $elementName Element name
      * @param string $filePath File path
      * @param int $lineNumber Line number
      */
     private function validateFile(
         PhpDocNode $doc,
-        string $elementName,
         string $filePath,
         int $lineNumber,
     ): void {
@@ -104,7 +102,7 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '2.2',
-                "{$filePath}:{$lineNumber}",
+                sprintf('%s:%d', $filePath, $lineNumber),
                 'File-level docblock lacks a summary',
             );
         }
@@ -115,7 +113,7 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '2.2',
-                "{$filePath}:{$lineNumber}",
+                sprintf('%s:%d', $filePath, $lineNumber),
                 "Script file lacks 'Arguments' or 'Parameters' section in description",
             );
         }
@@ -125,7 +123,7 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '2.2',
-                "{$filePath}:{$lineNumber}",
+                sprintf('%s:%d', $filePath, $lineNumber),
                 'Script file lacks @example demonstrating CLI usage',
             );
         }
@@ -135,7 +133,7 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '2.4',
-                "{$filePath}:{$lineNumber}",
+                sprintf('%s:%d', $filePath, $lineNumber),
                 'File-level docblock missing @package tag',
             );
         }
@@ -145,7 +143,7 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '2.3',
-                "{$filePath}:{$lineNumber}",
+                sprintf('%s:%d', $filePath, $lineNumber),
                 'File-level docblock missing @author tag',
             );
         }
@@ -171,8 +169,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Class/interface/trait '{$elementName}' lacks short description",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Class/interface/trait '%s' lacks short description", $elementName),
             );
         } else {
             $this->validateSummary($summary, $elementName, $filePath, $lineNumber);
@@ -183,8 +181,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' missing @package tag",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Class '%s' missing @package tag", $elementName),
             );
         }
 
@@ -193,8 +191,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' missing @since tag",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Class '%s' missing @since tag", $elementName),
             );
         }
 
@@ -203,8 +201,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Class '{$elementName}' should have @api or @internal marker",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Class '%s' should have @api or @internal marker", $elementName),
             );
         }
     }
@@ -229,8 +227,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_MUST,
                 '1.1',
-                "{$filePath}:{$lineNumber}",
-                "Method/function '{$elementName}' lacks short description",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Method/function '%s' lacks short description", $elementName),
             );
         }
 
@@ -239,8 +237,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '4.1',
-                "{$filePath}:{$lineNumber}",
-                "Method/function '{$elementName}' missing @return tag",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Method/function '%s' missing @return tag", $elementName),
             );
         }
     }
@@ -264,8 +262,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '3.3',
-                "{$filePath}:{$lineNumber}",
-                "Property '{$elementName}' missing @var tag",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Property '%s' missing @var tag", $elementName),
             );
         }
     }
@@ -287,14 +285,14 @@ final class Validator
         // Check for deprecated elements
         if ($this->hasTag($doc, '@deprecated')) {
             $deprecatedTag = $this->getTag($doc, '@deprecated');
-            if ($deprecatedTag !== null) {
+            if ($deprecatedTag instanceof PhpDocTagNode) {
                 $content = (string) $deprecatedTag->value;
                 if (!str_contains($content, '@see') && !str_contains($content, 'use ')) {
                     $this->addWarning(
                         self::LEVEL_SHOULD,
                         '5.2',
-                        "{$filePath}:{$lineNumber}",
-                        "Deprecated '{$elementName}' should reference replacement",
+                        sprintf('%s:%d', $filePath, $lineNumber),
+                        sprintf("Deprecated '%s' should reference replacement", $elementName),
                     );
                 }
             }
@@ -320,8 +318,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.3',
-                "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' exceeds 80 characters",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Summary for '%s' exceeds 80 characters", $elementName),
             );
         }
 
@@ -330,8 +328,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.3',
-                "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' should end with period",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Summary for '%s' should end with period", $elementName),
             );
         }
 
@@ -343,8 +341,8 @@ final class Validator
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.3',
-                "{$filePath}:{$lineNumber}",
-                "Summary for '{$elementName}' should not restate element name",
+                sprintf('%s:%d', $filePath, $lineNumber),
+                sprintf("Summary for '%s' should not restate element name", $elementName),
             );
         }
     }

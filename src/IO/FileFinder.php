@@ -46,6 +46,7 @@ final class FileFinder
                 if ($this->shouldInclude($realPath, $ignorePatterns)) {
                     $files[] = $realPath;
                 }
+
                 continue;
             }
 

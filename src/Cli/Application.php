@@ -22,7 +22,7 @@ use DouglasGreen\PhpDocExporter\IO\FileFinder;
  *
  * @since 1.0.0
  */
-final class Application
+final readonly class Application
 {
     private ArgsParser $parser;
 
@@ -74,7 +74,7 @@ final class Application
 
         foreach ($files as $file) {
             if ($config->verbose) {
-                fwrite(STDERR, "Processing: {$file}\n");
+                fwrite(STDERR, sprintf('Processing: %s%s', $file, PHP_EOL));
             }
 
             $documentation[] = $extractor->extract($file);
@@ -89,8 +89,8 @@ final class Application
 
         // Report warnings
         if ($warnings !== []) {
-            $mustCount = count(array_filter($warnings, fn ($w) => $w['level'] === 'MUST'));
-            $shouldCount = count(array_filter($warnings, fn ($w) => $w['level'] === 'SHOULD'));
+            $mustCount = count(array_filter($warnings, fn (array $w): bool => $w['level'] === 'MUST'));
+            $shouldCount = count(array_filter($warnings, fn (array $w): bool => $w['level'] === 'SHOULD'));
 
             fwrite(STDERR, sprintf(
                 "\nWarning: %d MUST violation(s), %d SHOULD improvement(s) detected\n",
@@ -108,7 +108,7 @@ final class Application
         $written = file_put_contents($config->outputFile, $markdown);
 
         if ($written === false) {
-            fwrite(STDERR, "error: failed to write output file: {$config->outputFile}\n");
+            fwrite(STDERR, sprintf('error: failed to write output file: %s%s', $config->outputFile, PHP_EOL));
             return ExitCodes::GENERAL_ERROR->value;
         }
 
