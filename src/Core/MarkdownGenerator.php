@@ -216,7 +216,13 @@ final class MarkdownGenerator
 
         if ($docText !== null) {
             $lines[] = $prefix . '```php';
-            $lines[] = $prefix . trim($docText);
+
+            // Normalize indentation: remove leading whitespace from each line
+            $normalizedDoc = preg_replace('/^[ \t]+/m', '', trim($docText));
+            foreach (explode("\n", $normalizedDoc) as $docLine) {
+                $lines[] = $prefix . $docLine;
+            }
+
             $lines[] = $prefix . '```';
             $lines[] = '';
 
