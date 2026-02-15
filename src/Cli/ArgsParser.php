@@ -56,13 +56,14 @@ final class ArgsParser
         $operandCount = 0;
 
         $i = 0;
-        while ($i < count($args)) {
+        $argsCount = count($args);
+        while ($i < $argsCount && isset($args[$i])) {
             $arg = $args[$i];
 
             // Handle -- option terminator
             if ($arg === '--') {
                 $i++;
-                while ($i < count($args)) {
+                while ($i < $argsCount && isset($args[$i])) {
                     $this->addOperand($args[$i]);
                     $operandCount++;
                     $i++;
@@ -73,7 +74,7 @@ final class ArgsParser
 
             // Handle long options
             if (str_starts_with($arg, '--')) {
-                $result = $this->parseLongOption($args, $i);
+                $result = $this->parseLongOption($args, $i, $argsCount);
                 if ($result === false) {
                     return false;
                 }
@@ -84,7 +85,7 @@ final class ArgsParser
 
             // Handle short options
             if (str_starts_with($arg, '-') && $arg !== '-') {
-                $result = $this->parseShortOptions($args, $i);
+                $result = $this->parseShortOptions($args, $i, $argsCount);
                 if ($result === false) {
                     return false;
                 }
@@ -202,11 +203,16 @@ HELP;
      *
      * @param list<string> $args Argument array
      * @param int $index Current index
+     * @param int $argsCount Total argument count
      *
      * @return int|false Next index or false on error
      */
-    private function parseLongOption(array $args, int $index): int|false
+    private function parseLongOption(array $args, int $index, int $argsCount): int|false
     {
+        if (!isset($args[$index])) {
+            return false;
+        }
+
         $arg = $args[$index];
         $option = substr($arg, 2);
         $value = null;
@@ -238,12 +244,18 @@ HELP;
                     return $index + 1;
                 }
 
-                if (!isset($args[$index + 1])) {
+                if ($index + 1 >= $argsCount) {
                     fwrite(STDERR, "error: --output requires a value\n");
                     return false;
                 }
 
-                $this->outputFile = $args[$index + 1];
+                $nextIndex = $index + 1;
+                if (!array_key_exists($nextIndex, $args)) {
+                    fwrite(STDERR, "error: --output requires a value\n");
+                    return false;
+                }
+
+                $this->outputFile = $args[$nextIndex];
                 return $index + 2;
             case 'ignore':
             case 'i':
@@ -252,12 +264,18 @@ HELP;
                     return $index + 1;
                 }
 
-                if (!isset($args[$index + 1])) {
+                if ($index + 1 >= $argsCount) {
                     fwrite(STDERR, "error: --ignore requires a value\n");
                     return false;
                 }
 
-                $this->ignorePaths[] = $args[$index + 1];
+                $nextIndex = $index + 1;
+                if (!array_key_exists($nextIndex, $args)) {
+                    fwrite(STDERR, "error: --ignore requires a value\n");
+                    return false;
+                }
+
+                $this->ignorePaths[] = $args[$nextIndex];
                 return $index + 2;
             default:
                 fwrite(STDERR, sprintf('error: unknown option --%s%s', $option, PHP_EOL));
@@ -270,10 +288,11 @@ HELP;
      *
      * @param list<string> $args Argument array
      * @param int $index Current index
+     * @param int $argsCount Total argument count
      *
      * @return int|false Next index or false on error
      */
-    private function parseShortOptions(array $args, int $index): int|false
+    private function parseShortOptions(array $args, int $index, int $argsCount): int|false
     {
         $arg = $args[$index];
         $options = substr($arg, 1);
@@ -298,12 +317,18 @@ HELP;
                         return false;
                     }
 
-                    if (!isset($args[$index + 1])) {
+                    if ($index + 1 >= $argsCount) {
                         fwrite(STDERR, "error: -o requires a value\n");
                         return false;
                     }
 
-                    $this->outputFile = $args[$index + 1];
+                    $nextIndex = $index + 1;
+                    if (!array_key_exists($nextIndex, $args)) {
+                        fwrite(STDERR, "error: -o requires a value\n");
+                        return false;
+                    }
+
+                    $this->outputFile = $args[$nextIndex];
                     return $index + 2;
                 case 'i':
                     if (!$isLast) {
@@ -311,12 +336,18 @@ HELP;
                         return false;
                     }
 
-                    if (!isset($args[$index + 1])) {
+                    if ($index + 1 >= $argsCount) {
                         fwrite(STDERR, "error: -i requires a value\n");
                         return false;
                     }
 
-                    $this->ignorePaths[] = $args[$index + 1];
+                    $nextIndex = $index + 1;
+                    if (!array_key_exists($nextIndex, $args)) {
+                        fwrite(STDERR, "error: -i requires a value\n");
+                        return false;
+                    }
+
+                    $this->ignorePaths[] = $args[$nextIndex];
                     return $index + 2;
                 default:
                     fwrite(STDERR, sprintf('error: unknown option -%s%s', $option, PHP_EOL));

@@ -7,10 +7,13 @@ namespace DouglasGreen\PhpDocExporter\Core;
 use Exception;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\Trait_;
@@ -18,9 +21,10 @@ use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
+use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
-use PHPStan\PhpDocParser\ParserConfig;
+use PHPStan\PhpDocParser\Parser\TypeParser;
 
 /**
  * Extracts PHPDoc comments from PHP files using PHPStan's parser.
@@ -46,9 +50,10 @@ final readonly class PhpDocExtractor
     {
         $this->phpParser = (new ParserFactory())->createForNewestSupportedVersion();
 
-        $config = new ParserConfig([]);
-        $this->lexer = new Lexer($config);
-        $this->phpDocParser = new PhpDocParser($config);
+        $this->lexer = new Lexer();
+        $constExprParser = new ConstExprParser();
+        $typeParser = new TypeParser($constExprParser);
+        $this->phpDocParser = new PhpDocParser($typeParser, $constExprParser);
     }
 
     /**
@@ -81,6 +86,7 @@ final readonly class PhpDocExtractor
             return ['file' => $filePath, 'elements' => []];
         }
 
+        /** @var list<array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null}> $elements */
         $elements = [];
 
         // Extract file-level docblock (Standard 2.1)
@@ -113,7 +119,7 @@ final readonly class PhpDocExtractor
      * in procedural files or scripts.
      *
      * @param array<Node> $stmts AST statements
-     * @param list<array> $elements Output array for extracted elements
+     * @param list<array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null}> $elements Output array for extracted elements
      */
     private function extractFileDocBlock(array $stmts, array &$elements): void
     {
@@ -121,7 +127,10 @@ final readonly class PhpDocExtractor
             return;
         }
 
-        $firstStmt = $stmts[0];
+        $firstStmt = $stmts[array_key_first($stmts)] ?? null;
+        if ($firstStmt === null) {
+            return;
+        }
 
         // Only treat as file-level docblock if attached to declare/namespace/nop
         // If attached to Class/Interface/Trait, it belongs to that element.
@@ -159,7 +168,7 @@ final readonly class PhpDocExtractor
      * Recursively traverses AST nodes to extract PHPDoc blocks.
      *
      * @param array<Node> $nodes AST nodes to traverse
-     * @param list<array> $elements Output array for extracted elements
+     * @param list<array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null}> $elements Output array for extracted elements
      */
     private function traverseNodes(array $nodes, array &$elements): void
     {
@@ -167,7 +176,9 @@ final readonly class PhpDocExtractor
             $this->processNode($node, $elements);
 
             if (property_exists($node, 'stmts') && is_array($node->stmts)) {
-                $this->traverseNodes($node->stmts, $elements);
+                /** @var array<Node> $childStmts */
+                $childStmts = $node->stmts;
+                $this->traverseNodes($childStmts, $elements);
             }
         }
     }
@@ -176,7 +187,7 @@ final readonly class PhpDocExtractor
      * Processes a single AST node for PHPDoc extraction.
      *
      * @param Node $node AST node to process
-     * @param list<array> $elements Output array for extracted elements
+     * @param list<array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null}> $elements Output array for extracted elements
      */
     private function processNode(Node $node, array &$elements): void
     {
@@ -246,11 +257,13 @@ final readonly class PhpDocExtractor
         }
 
         if ($node instanceof Interface_) {
-            return $node->name->toString();
+            $name = $node->name;
+            return $name instanceof Identifier ? $name->toString() : null;
         }
 
         if ($node instanceof Trait_) {
-            return $node->name->toString();
+            $name = $node->name;
+            return $name instanceof Identifier ? $name->toString() : null;
         }
 
         if ($node instanceof ClassMethod) {
@@ -284,7 +297,8 @@ final readonly class PhpDocExtractor
         $parent = $node->getAttribute('parent');
         while ($parent !== null) {
             if ($parent instanceof Namespace_) {
-                $namespace = $parent->name?->toString();
+                $name = $parent->name;
+                $namespace = $name instanceof Name ? $name->toString() : null;
                 break;
             }
 

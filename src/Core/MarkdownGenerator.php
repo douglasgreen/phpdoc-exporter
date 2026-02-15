@@ -37,7 +37,7 @@ final class MarkdownGenerator
      * @param list<array{file: string, elements: list<array>}> $documentation Extracted documentation data
      * @param string $projectName Project name for the document
      *
-     * @return array{markdown: string, warnings: list<array>}
+     * @return array{markdown: string, warnings: list<array{level: string, rule: string, element: string, message: string}>}
      */
     public function generate(array $documentation, string $projectName = 'PHP Documentation'): array
     {
@@ -95,7 +95,7 @@ final class MarkdownGenerator
      * Generates Markdown section for a single file.
      *
      * @param string $filePath File path
-     * @param list<array> $elements Documentation elements
+     * @param list<array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null}> $elements Documentation elements
      *
      * @return list<string> Markdown lines
      */
@@ -109,8 +109,8 @@ final class MarkdownGenerator
         ];
 
         // Separate file-level docblock from other elements
-        $fileElements = array_filter($elements, fn (array $e): bool => $e['type'] === 'file');
-        $otherElements = array_filter($elements, fn (array $e): bool => $e['type'] !== 'file');
+        $fileElements = array_values(array_filter($elements, fn (array $e): bool => $e['type'] === 'file'));
+        $otherElements = array_values(array_filter($elements, fn (array $e): bool => $e['type'] !== 'file'));
 
         // Output file-level docblock first
         foreach ($fileElements as $fileElement) {
@@ -125,7 +125,9 @@ final class MarkdownGenerator
         $properties = [];
 
         foreach ($otherElements as $element) {
-            match ($element['type']) {
+            $type = $element['type'];
+
+            match ($type) {
                 'class' => $classes[] = $element,
                 'interface' => $interfaces[] = $element,
                 'trait' => $traits[] = $element,
@@ -148,10 +150,11 @@ final class MarkdownGenerator
         foreach ($classes as $class) {
             $lines = [...$lines, ...$this->generateElementSection($class, $filePath)];
             // Add methods for this class
-            $classMethods = array_filter(
+            $className = $class['name'];
+            $classMethods = array_values(array_filter(
                 $otherElements,
-                fn (array $e): bool => $e['type'] === 'method' && str_starts_with((string) $e['name'], $class['name'] . '::'),
-            );
+                fn (array $e): bool => $e['type'] === 'method' && str_starts_with((string) $e['name'], $className . '::'),
+            ));
             foreach ($classMethods as $method) {
                 $lines = [...$lines, ...$this->generateElementSection($method, $filePath, indent: true)];
             }
@@ -173,7 +176,7 @@ final class MarkdownGenerator
     /**
      * Generates Markdown section for a single element.
      *
-     * @param array $element Element data
+     * @param array{type: string, name: string, namespace: string|null, startLine: int, endLine: int, doc: PhpDocNode|null, docText: string|null} $element Element data
      * @param string $filePath File path for validation
      * @param bool $indent Whether to indent (for class members)
      *
@@ -242,7 +245,7 @@ final class MarkdownGenerator
         $lines = [];
         $tagGroups = $this->extractTags($doc);
 
-        if ($tagGroups['param'] !== []) {
+        if (isset($tagGroups['param']) && $tagGroups['param'] !== []) {
             $lines[] = $prefix . '**Parameters:**';
             $lines[] = '';
             foreach ($tagGroups['param'] as $tag) {
@@ -252,7 +255,7 @@ final class MarkdownGenerator
             $lines[] = '';
         }
 
-        if ($tagGroups['return'] !== []) {
+        if (isset($tagGroups['return']) && $tagGroups['return'] !== []) {
             $lines[] = $prefix . '**Returns:**';
             $lines[] = '';
             foreach ($tagGroups['return'] as $tag) {
@@ -262,7 +265,7 @@ final class MarkdownGenerator
             $lines[] = '';
         }
 
-        if ($tagGroups['throws'] !== []) {
+        if (isset($tagGroups['throws']) && $tagGroups['throws'] !== []) {
             $lines[] = $prefix . '**Throws:**';
             $lines[] = '';
             foreach ($tagGroups['throws'] as $tag) {
@@ -272,7 +275,7 @@ final class MarkdownGenerator
             $lines[] = '';
         }
 
-        if ($tagGroups['see'] !== []) {
+        if (isset($tagGroups['see']) && $tagGroups['see'] !== []) {
             $lines[] = $prefix . '**See Also:**';
             $lines[] = '';
             foreach ($tagGroups['see'] as $tag) {
@@ -282,7 +285,7 @@ final class MarkdownGenerator
             $lines[] = '';
         }
 
-        if ($tagGroups['deprecated'] !== []) {
+        if (isset($tagGroups['deprecated']) && $tagGroups['deprecated'] !== []) {
             $lines[] = $prefix . '**⚠️ Deprecated:**';
             $lines[] = '';
             foreach ($tagGroups['deprecated'] as $tag) {
@@ -300,7 +303,7 @@ final class MarkdownGenerator
      *
      * @param PhpDocNode $doc Parsed PHPDoc node
      *
-     * @return array<string, list<PhpDocTagNode>>
+     * @return array{param: list<PhpDocTagNode>, return: list<PhpDocTagNode>, throws: list<PhpDocTagNode>, see: list<PhpDocTagNode>, deprecated: list<PhpDocTagNode>}
      */
     private function extractTags(PhpDocNode $doc): array
     {
@@ -317,7 +320,7 @@ final class MarkdownGenerator
                 $tagName = ltrim($child->name, '@');
                 $baseName = strtok($tagName, '-');
 
-                if ($baseName !== false && isset($groups[$baseName])) {
+                if ($baseName !== false && array_key_exists($baseName, $groups)) {
                     $groups[$baseName][] = $child;
                 }
             }
@@ -352,14 +355,14 @@ final class MarkdownGenerator
             '',
         ];
 
-        $mustWarnings = array_filter(
+        $mustWarnings = array_values(array_filter(
             $this->allWarnings,
             fn (array $w): bool => $w['level'] === 'MUST',
-        );
-        $shouldWarnings = array_filter(
+        ));
+        $shouldWarnings = array_values(array_filter(
             $this->allWarnings,
             fn (array $w): bool => $w['level'] === 'SHOULD',
-        );
+        ));
 
         if ($mustWarnings !== []) {
             $lines[] = '### ❌ MUST Violations (Critical)';

@@ -89,6 +89,7 @@ final readonly class Application
 
         // Report warnings
         if ($warnings !== []) {
+            /** @var list<array{level: string, rule: string, element: string, message: string}> $warnings */
             $mustCount = count(array_filter($warnings, fn (array $w): bool => $w['level'] === 'MUST'));
             $shouldCount = count(array_filter($warnings, fn (array $w): bool => $w['level'] === 'SHOULD'));
 
