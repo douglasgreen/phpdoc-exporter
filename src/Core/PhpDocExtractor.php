@@ -191,6 +191,13 @@ final readonly class PhpDocExtractor
      */
     private function processNode(Node $node, array &$elements): void
     {
+        // Filter out non-public methods and properties because not part of API
+        if ($node instanceof ClassMethod || $node instanceof Property) {
+            if (!$node->isPublic()) {
+                return;
+            }
+        }
+
         $type = $this->getNodeType($node);
         if ($type === null) {
             return;
