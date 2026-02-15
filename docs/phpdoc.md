@@ -138,9 +138,37 @@ Docblocks **MUST NOT** use:
 
 ---
 
-### 2. Class-level documentation
+### 2. File-Level & Script Documentation
 
-#### 2.1 Required class docblock elements
+2.1 **Applicability**
+- **MUST**: A file-level DocBlock must be the first structural element in any standalone PHP file, specifically:
+  - Executable CLI scripts (e.g., cron jobs, build tools).
+  - Configuration files returning arrays.
+  - Procedural files (helper libraries) not strictly namespaced or class-based.
+- **MUST**: For files containing classes, file-level DocBlocks are **OPTIONAL** unless strictly required by project governance (e.g., licensing headers). If used, they must precede the namespace declaration.
+
+2.2 **Executable Script Structure**
+- **MUST**: For executable scripts, the DocBlock must follow the `<?php` opening tag immediately (and the Shebang `#!` line, if present).
+- **MUST**: Include a **Summary** describing the script's primary operation (e.g., "Imports CSV data into the user table").
+- **MUST**: Include a **Description** containing a specific **"Arguments"** or **"Parameters"** section. This section must list:
+  - Expected Command Line Arguments (`$argv`).
+  - Supported Flags/Options (e.g., `-v`, `--dry-run`).
+  - Required Environment Variables.
+- **MUST**: Include an `@example` tag or fenced code block demonstrating the exact CLI command to trigger the script.
+
+2.3 **Procedural & Config Files**
+- **MUST**: Document the return structure of configuration files using `@return` or a Markdown description of the array shape.
+- **SHOULD**: Use `@author` and `@package` tags to establish ownership and module grouping for files that fall outside standard PSR-4 autoloading paths.
+
+2.4 **Syntax & Parsing**
+- **MUST**: Ensure the file-level DocBlock contains the `@package` tag if the file is part of a larger distribution, to prevent it from being treated as a "loose" file by documentation generators.
+- **RATIONALE**: Standalone scripts are often the entry points of an application. Documenting their inputs (arguments) and outputs (exit codes/side effects) is critical for automated DevOps pipelines and chatbots analyzing system capabilities.
+
+---
+
+### 3. Class-level documentation
+
+#### 3.1 Required class docblock elements
 
 Class docblocks **MUST** include:
 - **Purpose**: High-level role and responsibility in the application architecture
@@ -150,7 +178,7 @@ Class docblocks **MUST** include:
 
 **Rationale**: Provides architectural context necessary for chatbot analysis of system structure and enables correct usage without reading implementation code.
 
-#### 2.2 Usage examples for classes
+#### 3.2 Usage examples for classes
 
 Examples **MUST** use fenced code blocks with `php` language identifier and demonstrate:
 - Instantiation or dependency injection acquisition
@@ -164,7 +192,7 @@ Examples **SHOULD**:
 
 **Rationale**: Executable examples serve as functional specifications and training data for code generation models, reducing integration errors.
 
-#### 2.3 Property documentation standards
+#### 3.3 Property documentation standards
 
 Properties **MUST** document:
 - Semantic meaning and purpose
@@ -176,7 +204,7 @@ Properties **MUST NOT** duplicate the type description when native PHP 8.2+ type
 
 **Rationale**: Precise type annotations enable static analysis and accurate mock data generation for testing; constraint documentation prevents misuse.
 
-#### 2.4 Interfaces, traits, and abstract classes
+#### 3.4 Interfaces, traits, and abstract classes
 
 **Interfaces** **MUST** document:
 - Contract semantics and behavioral guarantees
@@ -199,9 +227,9 @@ Properties **MUST NOT** duplicate the type description when native PHP 8.2+ type
 
 ---
 
-### 3. Function and method-level documentation
+### 4. Function and method-level documentation
 
-#### 3.1 Mandatory method tags
+#### 4.1 Mandatory method tags
 
 Every method or function **MUST** include:
 - `@param` for each parameter, specifying type and purpose (never omit description)
@@ -210,7 +238,7 @@ Every method or function **MUST** include:
 
 **Rationale**: Complete method signatures form executable contracts that enable automated testing generation and safe API integration.
 
-#### 3.2 Method behavior specification
+#### 4.2 Method behavior specification
 
 Method docblocks **MUST** describe:
 - **Preconditions**: Input requirements and state assumptions (bulleted list preferred)
@@ -220,7 +248,7 @@ Method docblocks **MUST** describe:
 
 **Rationale**: Edge cases are where integration bugs cluster; explicit documentation enables automated reasoning about error scenarios and supports comprehensive testing.
 
-#### 3.3 Code examples in method docblocks
+#### 4.3 Code examples in method docblocks
 
 Methods that serve as **entry points, critical workflows, or complex utilities** **MUST** include at least one `@example` or fenced code block showing:
 - Typical input/output scenarios
@@ -231,7 +259,7 @@ Minor accessor methods or obvious implementations **MAY** omit examples if the c
 
 **Rationale**: Examples capture behavioral intent that signatures cannot express, serving as few-shot training data for LLM code generation.
 
-#### 3.4 Complex type documentation
+#### 4.4 Complex type documentation
 
 Arrays **MUST** use typed generics syntax:
 - `list<Foo>` for sequential arrays
@@ -244,7 +272,7 @@ Union types **MUST** use pipe notation: `Type1|Type2`, with the most common type
 
 **Rationale**: Ambiguous `array` or `mixed` types prevent accurate static analysis and code generation; precise types enable automated validation.
 
-#### 3.5 Error handling and security documentation
+#### 4.5 Error handling and security documentation
 
 Security-sensitive methods (authentication, encryption, file system, SQL construction) **MUST** explicitly document:
 - Trust boundaries (what input is user-controlled vs. system-generated)
@@ -256,9 +284,9 @@ Security-sensitive methods (authentication, encryption, file system, SQL constru
 
 ---
 
-### 4. Versioning, deprecation, and lifecycle
+### 5. Versioning, deprecation, and lifecycle
 
-#### 4.1 Version tracking
+#### 5.1 Version tracking
 
 Public API elements **MUST** include `@since <version>` using semantic versioning (major.minor.patch), with the version number indicating when the element was introduced.
 
@@ -266,7 +294,7 @@ Behavior changes to existing methods **SHOULD** add additional `@since` entries 
 
 **Rationale**: Enables historical tracking, automated changelog generation, and API evolution analysis for dependency management.
 
-#### 4.2 Deprecation notices
+#### 5.2 Deprecation notices
 
 Deprecated elements **MUST** include:
 ```php
@@ -283,9 +311,9 @@ Where `<message>` includes:
 
 ---
 
-### 5. Cross-referencing and navigation
+### 6. Cross-referencing and navigation
 
-#### 5.1 Internal references
+#### 6.1 Internal references
 
 When an element relates to others (factories, exceptions, configuration objects), docblocks **SHOULD** use `@see` with fully qualified names to reference:
 - Related classes, interfaces, or traits
@@ -296,13 +324,13 @@ Inline references within descriptions **MAY** use `{@see ClassName::method()}` f
 
 **Rationale**: Creates a navigable dependency graph in generated Markdown, improving discoverability and chatbot comprehension of system relationships.
 
-#### 5.2 External references
+#### 6.2 External references
 
 External specifications (RFCs, vendor documentation, security advisories) **SHOULD** use `@link` with stable URLs.
 
 **Rationale**: Preserves external knowledge dependencies explicitly for automated analysis and future maintenance.
 
-#### 5.3 Inheritance documentation
+#### 6.3 Inheritance documentation
 
 Use `{@inheritDoc}` **ONLY** when the inherited documentation is fully accurate for the override. When behavior differs (stricter preconditions, additional exceptions, narrowed return types), **MUST** override the docblock completely and document differences explicitly.
 
@@ -310,9 +338,9 @@ Use `{@inheritDoc}` **ONLY** when the inherited documentation is fully accurate 
 
 ---
 
-### 6. Markdown generation and output standards
+### 7. Markdown generation and output standards
 
-#### 6.1 PHPDocumentor configuration for standalone Markdown
+#### 7.1 PHPDocumentor configuration for standalone Markdown
 
 Projects **MUST** configure PHPDocumentor to generate:
 - Hierarchical table of contents (namespace → class → method)
@@ -322,13 +350,13 @@ Projects **MUST** configure PHPDocumentor to generate:
 
 **Rationale**: Standalone documentation enables effective chatbot analysis without requiring access to the source code repository.
 
-#### 6.2 Executable code blocks
+#### 7.2 Executable code blocks
 
 All examples in generated Markdown **MUST** render as fenced code blocks with `php` language identifiers. Examples **MUST** be syntactically valid and **SHOULD** be complete enough to execute in isolation (including necessary imports/use statements where ambiguous).
 
 **Rationale**: Enables syntax highlighting, copy-paste usability, and automated extraction of examples for testing.
 
-#### 6.3 Fallback content for undocumented elements
+#### 7.3 Fallback content for undocumented elements
 
 Public API elements (`@api`) **MUST NOT** be undocumented. For internal elements where documentation is missing, automated tools **SHOULD** generate minimal stubs containing:
 - One-sentence summary derived from the element name
@@ -339,15 +367,15 @@ Public API elements (`@api`) **MUST NOT** be undocumented. For internal elements
 
 ---
 
-### 7. Validation and automation
+### 8. Validation and automation
 
-#### 7.1 Automation-first enforcement
+#### 8.1 Automation-first enforcement
 
 Formatting, tag ordering, and completeness **MUST** be enforced through automation (PHP_CodeSniffer, PHP CS Fixer, PHPStan, Psalm) rather than manual review.
 
 **Rationale**: Prevents subjective formatting drift and ensures deterministic output across different development environments and LLM tools.
 
-#### 7.2 Required CI validation
+#### 8.2 Required CI validation
 
 Continuous integration **MUST** execute:
 - `phpdoc --validate` to check tag syntax and structure
@@ -358,7 +386,7 @@ CI **MUST** fail builds for `@api` elements missing required documentation (summ
 
 **Rationale**: Public documentation must remain complete; automated gates prevent documentation debt from entering the codebase.
 
-#### 7.3 Type consistency
+#### 8.3 Type consistency
 
 PHPDoc types **MUST NOT** contradict native PHP type hints. PHPDoc **MAY** be more specific (e.g., `non-empty-list<string>` vs `array`), but **MUST NOT** be incompatible (e.g., `string` in PHPDoc vs `int` in native hint).
 
@@ -366,9 +394,9 @@ PHPDoc types **MUST NOT** contradict native PHP type hints. PHPDoc **MAY** be mo
 
 ---
 
-### 8. Integration with chatbot analysis
+### 9. Integration with chatbot analysis
 
-#### 8.1 Markdown structure for automated analysis
+#### 9.1 Markdown structure for automated analysis
 
 Generated Markdown **MUST** include:
 - Consistent hierarchical headings (`#` Package, `##` Class, `###` Methods)
@@ -378,7 +406,7 @@ Generated Markdown **MUST** include:
 
 **Rationale**: Structured headings and frontmatter enable reliable parsing, chunking, and retrieval-augmented generation (RAG) for chatbot analysis.
 
-#### 8.2 Custom annotations for enhanced analysis
+#### 9.2 Custom annotations for enhanced analysis
 
 Projects **MAY** use PSR-5-compatible custom tags prefixed with `@x-` to provide machine-readable metadata:
 - `@x-security <classification>`: Trust boundaries, PII classification
@@ -388,7 +416,7 @@ Projects **MAY** use PSR-5-compatible custom tags prefixed with `@x-` to provide
 
 **Rationale**: Enhances automated reasoning about non-functional requirements without bloating narrative text; prefixed tags avoid collisions with future standards.
 
-#### 8.3 Comprehensiveness vs. conciseness
+#### 9.3 Comprehensiveness vs. conciseness
 
 Documentation **MUST** cover all public API elements without redundancy. Cross-reference related documentation rather than duplicating explanations. Use progressive disclosure: overview first, details in expandable sections or linked pages.
 
@@ -544,6 +572,45 @@ return (new PhpCsFixer\Config())
 ```
 
 ### Appendix D: Examples
+
+#### Compliant Example: Executable CLI Script
+
+```php
+#!/usr/bin/env php
+<?php
+/**
+ * Database Cleanup Utility.
+ *
+ * Scans the database for soft-deleted records older than a specific threshold
+ * and permanently removes them to free up storage space.
+ *
+ * ## Arguments
+ * - `days` (int): Optional. The age in days of records to delete. Defaults to 30.
+ * - `--dry-run`: If present, counts records without deleting them.
+ *
+ * ## Environment Variables
+ * - `DB_CONNECTION`: Required. The database DSN string.
+ *
+ * @package DevOps\Maintenance
+ * @author Engineering Team <eng@example.com>
+ * @license MIT
+ *
+ * @example
+ * ```bash
+ * # Run cleanup for records older than 60 days
+ * php bin/cleanup.php 60
+ *
+ * # specific check without deletion
+ * php bin/cleanup.php --dry-run
+ * ```
+ */
+
+require __DIR__ . '/../vendor/autoload.php';
+
+// Script logic follows...
+$days = $argv[1] ?? 30;
+// ...
+```
 
 #### Compliant vs. Non-Compliant: Class documentation
 

@@ -172,7 +172,7 @@ final class Validator
         if (!$this->hasTag($doc, '@return')) {
             $this->addWarning(
                 self::LEVEL_SHOULD,
-                '3.1',
+                '4.1',
                 "{$filePath}:{$lineNumber}",
                 "Method/function '{$elementName}' missing @return tag"
             );
@@ -197,7 +197,7 @@ final class Validator
         if (!$this->hasTag($doc, '@var')) {
             $this->addWarning(
                 self::LEVEL_SHOULD,
-                '2.3',
+                '3.3',
                 "{$filePath}:{$lineNumber}",
                 "Property '{$elementName}' missing @var tag"
             );
@@ -226,7 +226,7 @@ final class Validator
                 if (!str_contains($content, '@see') && !str_contains($content, 'use ')) {
                     $this->addWarning(
                         self::LEVEL_SHOULD,
-                        '4.2',
+                        '5.2',
                         "{$filePath}:{$lineNumber}",
                         "Deprecated '{$elementName}' should reference replacement"
                     );
