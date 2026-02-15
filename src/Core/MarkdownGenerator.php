@@ -23,7 +23,7 @@ final class MarkdownGenerator
 {
     private readonly Validator $validator;
 
-    /** @var list<array{level: string, rule: string, element: string, message: string}> */
+    /** @var list<array{level: string, rule: string, element: string, message: string, file: string}> */
     private array $allWarnings = [];
 
     public function __construct()
@@ -59,9 +59,9 @@ final class MarkdownGenerator
             $lines = [...$lines, ...$this->generateFileSection($filePath, $elements)];
         }
 
-        // Add warnings appendix if any
+        // Print warnings to stderr if any
         if ($this->allWarnings !== []) {
-            $lines = [...$lines, ...$this->generateWarningsSection()];
+            $this->printWarningsToStderr();
         }
 
         $markdown = implode("\n", $lines);
@@ -196,7 +196,10 @@ final class MarkdownGenerator
 
         // Validate and collect warnings
         $warnings = $this->validator->validate($doc, $type, $name, $filePath, $startLine);
-        $this->allWarnings = [...$this->allWarnings, ...$warnings];
+        foreach ($warnings as $warning) {
+            $warning['file'] = $this->getRelativePath($filePath);
+            $this->allWarnings[] = $warning;
+        }
 
         $displayType = ucfirst((string) $type);
         $displayName = $type === 'file' ? 'Script/File' : $name;
@@ -340,20 +343,17 @@ final class MarkdownGenerator
     }
 
     /**
-     * Generates the warnings appendix section.
-     *
-     * @return list<string> Markdown lines
+     * Prints warnings to stderr.
      */
-    private function generateWarningsSection(): array
+    private function printWarningsToStderr(): void
     {
-        $lines = [
-            '---',
-            '',
-            '## PHPDoc Standards Violations',
-            '',
-            'The following violations of `phpdoc.md` standards were detected:',
-            '',
-        ];
+        $stderr = fopen('php://stderr', 'w');
+        if ($stderr === false) {
+            return;
+        }
+
+        fwrite($stderr, "PHPDoc Standards Violations:\n");
+        fwrite($stderr, "The following violations of `phpdoc.md` standards were detected:\n\n");
 
         $mustWarnings = array_values(array_filter(
             $this->allWarnings,
@@ -365,34 +365,34 @@ final class MarkdownGenerator
         ));
 
         if ($mustWarnings !== []) {
-            $lines[] = '### ❌ MUST Violations (Critical)';
-            $lines[] = '';
+            fwrite($stderr, "MUST Violations (Critical):\n");
             foreach ($mustWarnings as $warning) {
-                $lines[] = sprintf(
-                    '- **[%s]** %s',
+                fwrite($stderr, sprintf(
+                    "  - [%s] %s (%s)\n",
                     $warning['rule'],
                     $warning['message'],
-                );
+                    $warning['file'],
+                ));
             }
 
-            $lines[] = '';
+            fwrite($stderr, "\n");
         }
 
         if ($shouldWarnings !== []) {
-            $lines[] = '### ⚠️ SHOULD Improvements';
-            $lines[] = '';
+            fwrite($stderr, "SHOULD Improvements:\n");
             foreach ($shouldWarnings as $warning) {
-                $lines[] = sprintf(
-                    '- **[%s]** %s',
+                fwrite($stderr, sprintf(
+                    "  - [%s] %s (%s)\n",
                     $warning['rule'],
                     $warning['message'],
-                );
+                    $warning['file'],
+                ));
             }
 
-            $lines[] = '';
+            fwrite($stderr, "\n");
         }
 
-        return $lines;
+        fclose($stderr);
     }
 
     /**
