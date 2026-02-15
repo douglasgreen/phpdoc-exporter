@@ -3,6 +3,43 @@
 
 declare(strict_types=1);
 
+/**
+ * PHPDoc Exporter CLI Utility.
+ *
+ * Scans specified PHP files or directories to extract PHPDoc comments
+ * and generates a single Markdown document with standards validation.
+ *
+ * ## Arguments
+ * - `<source>`: One or more PHP files or directories to process.
+ *
+ * ## Options
+ * - `-o, --output <file>`: The Markdown file to write (required).
+ * - `-i, --ignore <path>`: Path to ignore (can be used multiple times).
+ * - `-s, --strict`: Fail if PHPDoc validation warnings are detected.
+ * - `-v, --verbose`: Enable verbose output to stderr.
+ * - `-h, --help`: Display help message.
+ * - `--version`: Display version information.
+ *
+ * ## Environment Variables
+ * - `NO_COLOR`: Disable colored output if set.
+ *
+ * @package DouglasGreen\PhpDocExporter
+ * @author Douglas Green <douglasgreen@example.com>
+ * @license MIT
+ *
+ * @example
+ * ```bash
+ * # Export documentation for src/ directory
+ * php bin/phpdoc-exporter src/ -o docs/api.md
+ *
+ * # Export with strict validation and verbose output
+ * php bin/phpdoc-exporter src/ -o docs/api.md -s -v
+ *
+ * # Ignore specific directories
+ * php bin/phpdoc-exporter src/ tests/ -i vendor/ -o full-docs.md
+ * ```
+ */
+
 use DouglasGreen\PhpDocExporter\Cli\Application;
 
 // Find autoloader

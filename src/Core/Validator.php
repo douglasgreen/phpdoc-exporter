@@ -11,7 +11,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
  * Validates PHPDoc comments against phpdoc.md standards.
  *
  * Checks for required tags, proper formatting, and compliance with
- * documentation standards for classes, methods, and properties.
+ * documentation standards for files, classes, methods, and properties.
  *
  * @package DouglasGreen\PhpDocExporter\Core
  * @api
@@ -61,6 +61,7 @@ final class Validator
         }
 
         match ($elementType) {
+            'file' => $this->validateFile($doc, $elementName, $filePath, $lineNumber),
             'class', 'interface', 'trait' => $this->validateClassLike($doc, $elementName, $filePath, $lineNumber),
             'method', 'function' => $this->validateCallable($doc, $elementName, $filePath, $lineNumber),
             'property' => $this->validateProperty($doc, $elementName, $filePath, $lineNumber),
@@ -80,6 +81,73 @@ final class Validator
     public function getWarnings(): array
     {
         return $this->warnings;
+    }
+
+    /**
+     * Validates file-level docblock (Standard 2).
+     *
+     * @param PhpDocNode $doc Parsed PHPDoc node
+     * @param string $elementName Element name
+     * @param string $filePath File path
+     * @param int $lineNumber Line number
+     */
+    private function validateFile(
+        PhpDocNode $doc,
+        string $elementName,
+        string $filePath,
+        int $lineNumber
+    ): void {
+        // 2.1: MUST include summary
+        $summary = $this->extractSummary($doc);
+        if ($summary === null || $summary === '') {
+            $this->addWarning(
+                self::LEVEL_MUST,
+                '2.2',
+                "{$filePath}:{$lineNumber}",
+                "File-level docblock lacks a summary"
+            );
+        }
+
+        // 2.2: MUST include "Arguments" or "Parameters" section in description for scripts
+        $description = $this->extractDescription($doc);
+        if (!$this->hasArgumentsSection($description)) {
+            $this->addWarning(
+                self::LEVEL_MUST,
+                '2.2',
+                "{$filePath}:{$lineNumber}",
+                "Script file lacks 'Arguments' or 'Parameters' section in description"
+            );
+        }
+
+        // 2.2: MUST include @example
+        if (!$this->hasTag($doc, '@example')) {
+            $this->addWarning(
+                self::LEVEL_MUST,
+                '2.2',
+                "{$filePath}:{$lineNumber}",
+                "Script file lacks @example demonstrating CLI usage"
+            );
+        }
+
+        // 2.4: MUST include @package
+        if (!$this->hasTag($doc, '@package')) {
+            $this->addWarning(
+                self::LEVEL_MUST,
+                '2.4',
+                "{$filePath}:{$lineNumber}",
+                "File-level docblock missing @package tag"
+            );
+        }
+
+        // 2.3: SHOULD include @author
+        if (!$this->hasTag($doc, '@author')) {
+            $this->addWarning(
+                self::LEVEL_SHOULD,
+                '2.3',
+                "{$filePath}:{$lineNumber}",
+                "File-level docblock missing @author tag"
+            );
+        }
     }
 
     /**
@@ -164,9 +232,6 @@ final class Validator
                 "Method/function '{$elementName}' lacks short description"
             );
         }
-
-        // MUST have @param for each parameter (warning only - can't verify count)
-        // This is noted but not enforced without parameter reflection
 
         // SHOULD have @return (even for void)
         if (!$this->hasTag($doc, '@return')) {
@@ -302,6 +367,26 @@ final class Validator
         }
 
         return null;
+    }
+
+    /**
+     * Extracts the full description text from a PHPDoc node.
+     *
+     * @param PhpDocNode $doc Parsed PHPDoc node
+     */
+    private function extractDescription(PhpDocNode $doc): string
+    {
+        return $doc->__toString();
+    }
+
+    /**
+     * Checks if description contains Arguments or Parameters section.
+     *
+     * @param string $description Full description text
+     */
+    private function hasArgumentsSection(string $description): bool
+    {
+        return preg_match('/##\s*(Arguments|Parameters)/i', $description) === 1;
     }
 
     /**

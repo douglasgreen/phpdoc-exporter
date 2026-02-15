@@ -103,6 +103,15 @@ final class MarkdownGenerator
             '',
         ];
 
+        // Separate file-level docblock from other elements
+        $fileElements = array_filter($elements, fn($e) => $e['type'] === 'file');
+        $otherElements = array_filter($elements, fn($e) => $e['type'] !== 'file');
+
+        // Output file-level docblock first
+        foreach ($fileElements as $fileElement) {
+            $lines = [...$lines, ...$this->generateElementSection($fileElement, $filePath)];
+        }
+
         // Group elements by type for hierarchical output
         $classes = [];
         $interfaces = [];
@@ -110,7 +119,7 @@ final class MarkdownGenerator
         $functions = [];
         $properties = [];
 
-        foreach ($elements as $element) {
+        foreach ($otherElements as $element) {
             match ($element['type']) {
                 'class' => $classes[] = $element,
                 'interface' => $interfaces[] = $element,
@@ -135,7 +144,7 @@ final class MarkdownGenerator
             $lines = [...$lines, ...$this->generateElementSection($class, $filePath)];
             // Add methods for this class
             $classMethods = array_filter(
-                $elements,
+                $otherElements,
                 fn($e) => $e['type'] === 'method' && str_starts_with($e['name'], $class['name'] . '::')
             );
             foreach ($classMethods as $method) {
@@ -167,7 +176,7 @@ final class MarkdownGenerator
     private function generateElementSection(array $element, string $filePath, bool $indent = false): array
     {
         $prefix = $indent ? '    ' : '';
-        $headingLevel = $indent ? '####' : '###';
+        $headingLevel = $element['type'] === 'file' ? '###' : ($indent ? '####' : '###');
 
         $name = $element['name'];
         $type = $element['type'];
@@ -180,8 +189,11 @@ final class MarkdownGenerator
         $warnings = $this->validator->validate($doc, $type, $name, $filePath, $startLine);
         $this->allWarnings = [...$this->allWarnings, ...$warnings];
 
+        $displayType = ucfirst($type);
+        $displayName = $type === 'file' ? 'Script/File' : $name;
+
         $lines = [
-            $prefix . $headingLevel . ' ' . ucfirst($type) . ': `' . $name . '`',
+            $prefix . $headingLevel . ' ' . $displayType . ': `' . $displayName . '`',
             '',
         ];
 

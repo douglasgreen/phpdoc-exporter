@@ -535,15 +535,15 @@ parameters:
   <file>src</file>
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>tests/*</exclude-pattern>
-  
+
   <rule ref="PSR12"/>
-  
+
   <!-- Documentation sniffs -->
   <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing"/>
   <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
   <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
   <rule ref="SlevomatCodingStandard.Commenting.UselessInheritDocComment"/>
-  
+
   <arg name="colors"/>
   <arg name="cache" value=".phpcs-cache"/>
 </ruleset>

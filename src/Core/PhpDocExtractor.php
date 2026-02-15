@@ -8,11 +8,11 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\Trait_;
-use PhpParser\NodeAbstract;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
@@ -25,7 +25,7 @@ use PHPStan\PhpDocParser\ParserConfig;
  * Extracts PHPDoc comments from PHP files using PHPStan's parser.
  *
  * Parses PHP source files and extracts structured PHPDoc information
- * from classes, interfaces, traits, methods, functions, and properties.
+ * from file headers, classes, interfaces, traits, methods, functions, and properties.
  *
  * @package DouglasGreen\PhpDocExporter\Core
  * @api
@@ -76,6 +76,11 @@ final class PhpDocExtractor
         }
 
         $elements = [];
+
+        // Extract file-level docblock (Standard 2.1)
+        $this->extractFileDocBlock($stmts, $elements);
+
+        // Traverse all nodes for other elements
         $this->traverseNodes($stmts, $elements);
 
         return [
@@ -93,6 +98,55 @@ final class PhpDocExtractor
     {
         $tokens = new TokenIterator($this->lexer->tokenize($docComment));
         return $this->phpDocParser->parse($tokens);
+    }
+
+    /**
+     * Extracts file-level docblock if present.
+     *
+     * File-level docblocks are attached to the first statement (usually declare or namespace)
+     * in procedural files or scripts.
+     *
+     * @param array<Node> $stmts AST statements
+     * @param list<array> $elements Output array for extracted elements
+     */
+    private function extractFileDocBlock(array $stmts, array &$elements): void
+    {
+        if ($stmts === []) {
+            return;
+        }
+
+        $firstStmt = $stmts[0];
+
+        // Only treat as file-level docblock if attached to declare/namespace/nop
+        // If attached to Class/Interface/Trait, it belongs to that element.
+        if ($firstStmt instanceof Class_
+            || $firstStmt instanceof Interface_
+            || $firstStmt instanceof Trait_
+        ) {
+            return;
+        }
+
+        $doc = $firstStmt->getDocComment();
+        if ($doc instanceof Doc) {
+            $docText = $doc->getText();
+            $docNode = null;
+
+            try {
+                $docNode = $this->parseDocComment($docText);
+            } catch (\Exception) {
+                // Keep docText but docNode remains null for invalid PHPDoc
+            }
+
+            $elements[] = [
+                'type' => 'file',
+                'name' => 'file',
+                'namespace' => null,
+                'startLine' => $firstStmt->getStartLine(),
+                'endLine' => $firstStmt->getEndLine(),
+                'doc' => $docNode,
+                'docText' => $docText,
+            ];
+        }
     }
 
     /**
@@ -217,7 +271,7 @@ final class PhpDocExtractor
         // Traverse up to find namespace
         $parent = $node->getAttribute('parent');
         while ($parent !== null) {
-            if ($parent instanceof Node\Stmt\Namespace_) {
+            if ($parent instanceof Namespace_) {
                 $namespace = $parent->name?->toString();
                 break;
             }
