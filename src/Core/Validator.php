@@ -336,13 +336,12 @@ final class Validator
         // SHOULD NOT restate element name
         $lowerName = strtolower($elementName);
         $lowerSummary = strtolower($summary);
-        if (str_contains($lowerSummary, $lowerName . ' ') ||
-            str_starts_with($lowerSummary, $lowerName)) {
+        if (str_starts_with($lowerSummary, $lowerName)) {
             $this->addWarning(
                 self::LEVEL_SHOULD,
                 '1.3',
                 sprintf('%s:%d', $filePath, $lineNumber),
-                sprintf("Summary for '%s' should not restate element name", $elementName),
+                sprintf("Summary for '%s' should not merely restate element name", $elementName),
             );
         }
     }
