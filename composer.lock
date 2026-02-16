@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fda195e71b1acd30ae25c5281cd4048b",
+    "content-hash": "18e7112bcd1bbe6720d6b82165776195",
     "packages": [
         {
             "name": "douglasgreen/opt-parser",
-            "version": "v0.7.0",
+            "version": "v0.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/douglasgreen/opt-parser.git",
-                "reference": "8083e7e8a2701c4ef7c1c1d0b9de75d412cd6472"
+                "reference": "66f84db99380662dbc4126b22885024fb5675924"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/douglasgreen/opt-parser/zipball/8083e7e8a2701c4ef7c1c1d0b9de75d412cd6472",
-                "reference": "8083e7e8a2701c4ef7c1c1d0b9de75d412cd6472",
+                "url": "https://api.github.com/repos/douglasgreen/opt-parser/zipball/66f84db99380662dbc4126b22885024fb5675924",
+                "reference": "66f84db99380662dbc4126b22885024fb5675924",
                 "shasum": ""
             },
             "require": {
@@ -63,9 +63,9 @@
             ],
             "support": {
                 "issues": "https://github.com/douglasgreen/opt-parser/issues",
-                "source": "https://github.com/douglasgreen/opt-parser/tree/v0.7.0"
+                "source": "https://github.com/douglasgreen/opt-parser/tree/v0.7.1"
             },
-            "time": "2026-02-16T00:48:25+00:00"
+            "time": "2026-02-16T01:41:06+00:00"
         },
         {
             "name": "nikic/php-parser",
