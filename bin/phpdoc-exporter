@@ -24,7 +24,7 @@ declare(strict_types=1);
  * - `NO_COLOR`: Disable colored output if set.
  *
  * @package DouglasGreen\PhpDocExporter
- * @author Douglas Green <douglasgreen@example.com>
+ * @author Douglas Green <douglas.s.green@protonmail.com>
  * @license MIT
  *
  * @example
