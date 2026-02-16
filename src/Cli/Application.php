@@ -37,9 +37,9 @@ final readonly class Application
         );
 
         $this->parser
-            ->addTerm('source', 'STRING', 'PHP file or directory to process (multiple allowed)', required: true)
+            ->addTerm('source', 'STRING', 'PHP file or directory to process (multiple allowed)', required: true, multiple: true)
             ->addParam(['output', 'o'], 'STRING', 'Output Markdown file', required: true)
-            ->addParam(['ignore', 'i'], 'STRING', 'Path to ignore (multiple allowed)')
+            ->addParam(['ignore', 'i'], 'STRING', 'Path to ignore (multiple allowed)', multiple: true)
             ->addFlag(['strict', 's'], 'Fail on PHPDoc validation warnings')
             ->addFlag(['verbose', 'v'], 'Enable verbose output')
             ->addExample('phpdoc-exporter src/ -o docs/api.md')
