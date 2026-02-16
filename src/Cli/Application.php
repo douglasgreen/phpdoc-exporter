@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DouglasGreen\PhpDocExporter\Cli;
 
+use DouglasGreen\OptParser\Exception\OptParserException;
+use DouglasGreen\OptParser\OptParser;
 use DouglasGreen\PhpDocExporter\Config\Configuration;
 use DouglasGreen\PhpDocExporter\Core\MarkdownGenerator;
 use DouglasGreen\PhpDocExporter\Core\PhpDocExtractor;
@@ -24,11 +26,31 @@ use DouglasGreen\PhpDocExporter\IO\FileFinder;
  */
 final readonly class Application
 {
-    private ArgsParser $parser;
+    private OptParser $parser;
 
     public function __construct()
     {
-        $this->parser = new ArgsParser();
+        $this->parser = new OptParser(
+            'phpdoc-exporter',
+            'Export PHPDoc comments from PHP files to a single Markdown document',
+            '1.0.0',
+        );
+
+        $this->parser
+            ->addTerm('source', 'STRING', 'PHP file or directory to process (multiple allowed)', required: true)
+            ->addParam(['output', 'o'], 'STRING', 'Output Markdown file', required: true)
+            ->addParam(['ignore', 'i'], 'STRING', 'Path to ignore (multiple allowed)')
+            ->addFlag(['strict', 's'], 'Fail on PHPDoc validation warnings')
+            ->addFlag(['verbose', 'v'], 'Enable verbose output')
+            ->addExample('phpdoc-exporter src/ -o docs/api.md')
+            ->addExample('phpdoc-exporter src/ lib/ -i vendor/ -o docs/api.md')
+            ->addExample('phpdoc-exporter src/Service.php -o service-docs.md --strict')
+            ->addExitCode('0', 'Success')
+            ->addExitCode('1', 'General error')
+            ->addExitCode('2', 'Usage error (invalid arguments)')
+            ->addExitCode('130', 'Interrupted (SIGINT)')
+            ->addEnvironment('NO_COLOR', 'Disable colored output')
+            ->addDocumentation('https://github.com/douglasgreen/phpdoc-exporter');
     }
 
     /**
@@ -48,12 +70,21 @@ final readonly class Application
         });
 
         // Parse arguments
-        $config = $this->parser->parse($argv);
-
-        if ($config === false) {
-            fwrite(STDERR, "Try 'phpdoc-exporter --help' for more information.\n");
-            return ExitCodes::USAGE_ERROR->value;
+        try {
+            $input = $this->parser->parse($argv);
+        } catch (OptParserException $e) {
+            fwrite(STDERR, $e->getMessage() . PHP_EOL);
+            return $e->getExitCode();
         }
+
+        // Build configuration from parsed input
+        $config = new Configuration(
+            sourcePaths: (array) $input->get('source'),
+            ignorePaths: (array) ($input->get('ignore') ?? []),
+            outputFile: (string) $input->get('output'),
+            verbose: $input->get('verbose') ?? false,
+            strict: $input->get('strict') ?? false,
+        );
 
         // Discover PHP files
         $finder = new FileFinder();
