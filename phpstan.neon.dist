@@ -1,19 +1,11 @@
+# version: 1.0.1
+# modified: 2026-02-21
+
 parameters:
   level: 8
   paths:
-    - bin/phpdoc-exporter
-    - .php-cs-fixer.php
-    - rector.php
+    - bin
     - src
   excludePaths:
     - var
     - vendor
-  
-  # Strict analysis settings
-  checkUninitializedProperties: true
-  checkExplicitMixed: true
-  reportMaybes: true
-  checkBenevolentUnionTypes: true
-  rememberPossiblyImpureFunctionValues: false
-  reportPossiblyNonexistentGeneralArrayOffset: true
-  reportPossiblyNonexistentConstantArrayOffset: true
