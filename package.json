@@ -1,14 +1,14 @@
 {
-  "_version": "1.1.0",
-  "_modified": "2026-02-22",
+  "modified": "2026-02-26",
   "name": "douglasgreen/phpdoc-exporter",
   "version": "1.0.0",
   "description": "CLI tool to export PHPDoc comments to Markdown with standards validation",
   "type": "module",
   "scripts": {
     "lint": "npm run lint:md",
-    "lint:md": "markdownlint \"**/*.md\"",
-    "format": "prettier --write ."
+    "lint:md": "markdownlint '**/*.md'",
+    "format": "prettier --write . && markdownlint '**/*.md' --fix"
+
   },
   "devDependencies": {
     "markdownlint-cli": "^0.47.0",
